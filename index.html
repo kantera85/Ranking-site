@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ゲームタイムランキング</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    h1 { color: darkblue; }
+    .ranking { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>ゲームタイム送信フォーム</h1>
+  <form id="timeForm">
+    名前: <input type="text" id="playerName" required><br>
+    タイム（秒）: <input type="number" id="playerTime" required><br>
+    <button type="submit">送信</button>
+  </form>
+
+  <div class="ranking">
+    <h2>🏆 ランキング（上位5人）</h2>
+    <ol id="rankingList"></ol>
+  </div>
+
+  <script>
+    // Firebaseの設定（自分のFirebaseからコピーする）
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // フォーム送信処理
+    document.getElementById("timeForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("playerName").value;
+      const time = parseFloat(document.getElementById("playerTime").value);
+
+      await db.collection("times").add({
+        name: name,
+        time: time,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      alert("送信完了！");
+      loadRanking();
+    });
+
+    // ランキング読み込み
+    async function loadRanking() {
+      const rankingList = document.getElementById("rankingList");
+      rankingList.innerHTML = "";
+
+      const querySnapshot = await db.collection("times")
+        .orderBy("time", "asc")
+        .limit(5)
+        .get();
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.name} - ${data.time} 秒`;
+        rankingList.appendChild(li);
+      });
+    }
+
+    // 最初にランキング表示
+    loadRanking();
+  </script>
+</body>
+</html>
