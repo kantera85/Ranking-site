@@ -1,0 +1,36 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>タイム送信フォーム</title>
+</head>
+<body>
+  <h1>ゲームタイム送信</h1>
+  <form id="timeForm">
+    名前: <input type="text" name="name" required><br>
+    タイム（秒）: <input type="number" name="time" required><br>
+    <button type="submit">送信</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    document.getElementById('timeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const name = form.name.value;
+      const time = parseFloat(form.time.value);
+
+      const res = await fetch('/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, time })
+      });
+
+      const result = await res.json();
+      document.getElementById('message').textContent = result.message;
+      form.reset();
+    });
+  </script>
+</body>
+</html>
